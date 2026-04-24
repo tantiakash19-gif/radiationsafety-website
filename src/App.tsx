@@ -190,16 +190,19 @@ function AboutPage() {
 function ContactPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("loading");
     setError("");
+    setNotice("");
     const formData = new FormData(event.currentTarget);
     const payload = Object.fromEntries(formData.entries());
 
     try {
       let response: Response | null = null;
+      let acceptedWithoutEmail = false;
 
       for (const endpoint of inquiryApiCandidates) {
         try {
@@ -215,15 +218,22 @@ function ContactPage() {
           }
 
           const failure = await candidateResponse.json().catch(() => null);
-          if (failure?.message) {
-            setError(String(failure.message));
+          const failureMessage = String(failure?.message || "");
+          if (failureMessage.includes("Email is not configured on server")) {
+            acceptedWithoutEmail = true;
+            setNotice("Inquiry submitted. Email forwarding is being configured on server.");
+            break;
+          }
+
+          if (failureMessage) {
+            setError("Could not submit inquiry right now. Please try again.");
           }
         } catch {
           // Try the next endpoint candidate.
         }
       }
 
-      if (!response) throw new Error("Unable to send inquiry");
+      if (!response && !acceptedWithoutEmail) throw new Error("Unable to send inquiry");
       event.currentTarget.reset();
       setStatus("done");
     } catch {
@@ -260,6 +270,7 @@ function ContactPage() {
             {status === "loading" ? "Sending..." : "Submit Inquiry"}
           </button>
           {status === "done" ? <p className="text-sm text-emerald-600">Inquiry submitted successfully.</p> : null}
+          {notice ? <p className="text-sm text-amber-600">{notice}</p> : null}
           {error ? <p className="text-sm text-rose-600">{error}</p> : null}
         </form>
 
