@@ -12,6 +12,7 @@ const smtpPort = Number(process.env.SMTP_PORT || 587);
 const smtpSecure = process.env.SMTP_SECURE === "true";
 const smtpUser = process.env.SMTP_USER;
 const smtpPass = process.env.SMTP_PASS;
+const adminToken = process.env.ADMIN_TOKEN || "";
 
 app.use(cors());
 app.use(express.json());
@@ -32,6 +33,32 @@ async function saveInquiry(inquiry) {
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.post("/api/debug/mail", async (req, res) => {
+  const providedToken = String(req.headers["x-admin-token"] || req.body?.token || "");
+  if (!adminToken || providedToken !== adminToken) {
+    return res.status(401).json({ ok: false, message: "Unauthorized" });
+  }
+
+  const transporter = createTransporter();
+  if (!transporter) {
+    return res.status(400).json({ ok: false, message: "SMTP is not configured." });
+  }
+
+  const sentAt = new Date().toISOString();
+  try {
+    await transporter.sendMail({
+      from: smtpUser,
+      to: inquiryRecipient,
+      subject: "SMTP Debug Test Email",
+      text: `SMTP debug email sent successfully at ${sentAt}.`,
+    });
+    return res.json({ ok: true, message: `Debug email sent to ${inquiryRecipient}.`, sentAt });
+  } catch (error) {
+    console.error("Debug email send failed:", error);
+    return res.status(500).json({ ok: false, message: "Failed to send debug email." });
+  }
 });
 
 app.post("/api/inquiry", async (req, res) => {

@@ -20,5 +20,14 @@ Required vars:
 - `SMTP_USER` (your sender Gmail address)
 - `SMTP_PASS` (your Gmail App Password)
 - `INQUIRY_RECIPIENT` (optional, defaults to `tantiakash19@gmail.com`)
+- `ADMIN_TOKEN` (required for debug mail API)
 
 If SMTP is not configured, inquiries are still accepted and stored in `server/inquiries.ndjson` so you do not lose leads.
+
+## SMTP Debug API
+
+Use this to quickly verify that email sending works:
+
+- Endpoint: `POST /api/debug/mail`
+- Auth: header `x-admin-token: <ADMIN_TOKEN>` (or JSON body `{ "token": "<ADMIN_TOKEN>" }`)
+- Success: sends a test email to `INQUIRY_RECIPIENT`
