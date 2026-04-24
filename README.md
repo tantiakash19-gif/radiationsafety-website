@@ -20,3 +20,5 @@ Required vars:
 - `SMTP_USER` (your sender Gmail address)
 - `SMTP_PASS` (your Gmail App Password)
 - `INQUIRY_RECIPIENT` (optional, defaults to `tantiakash19@gmail.com`)
+
+If SMTP is not configured, inquiries are still accepted and stored in `server/inquiries.ndjson` so you do not lose leads.

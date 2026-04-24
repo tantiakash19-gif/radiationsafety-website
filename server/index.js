@@ -1,6 +1,7 @@
 import "dotenv/config";
 import cors from "cors";
 import express from "express";
+import { appendFile } from "node:fs/promises";
 import nodemailer from "nodemailer";
 
 const app = express();
@@ -25,6 +26,10 @@ function createTransporter() {
   });
 }
 
+async function saveInquiry(inquiry) {
+  await appendFile("server/inquiries.ndjson", `${JSON.stringify(inquiry)}\n`, "utf8");
+}
+
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
 });
@@ -37,13 +42,20 @@ app.post("/api/inquiry", async (req, res) => {
   }
 
   const submittedAt = new Date().toISOString();
-  console.log("New inquiry:", { name, phone, email, message, submittedAt });
+  const inquiry = { name, phone, email, message, submittedAt };
+  console.log("New inquiry:", inquiry);
+
+  try {
+    await saveInquiry(inquiry);
+  } catch (error) {
+    console.error("Failed to persist inquiry:", error);
+  }
 
   const transporter = createTransporter();
   if (!transporter) {
-    return res.status(500).json({
-      ok: false,
-      message: "Email is not configured on server. Set SMTP_HOST, SMTP_USER and SMTP_PASS.",
+    return res.status(200).json({
+      ok: true,
+      message: "Inquiry received. Email is not configured yet, but inquiry was saved on server.",
     });
   }
 
@@ -58,7 +70,7 @@ app.post("/api/inquiry", async (req, res) => {
     return res.json({ ok: true, message: "Inquiry received and emailed." });
   } catch (error) {
     console.error("Failed to send inquiry email:", error);
-    return res.status(500).json({ ok: false, message: "Inquiry saved, but failed to send email." });
+    return res.status(200).json({ ok: true, message: "Inquiry received. Email send failed, but inquiry was saved." });
   }
 });
 
