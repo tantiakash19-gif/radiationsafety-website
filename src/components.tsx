@@ -70,7 +70,7 @@ export function SiteFooter() {
 export function WhatsAppFloat() {
   return (
     <a
-      href="https://wa.me/919999999999?text=Hello%20RadiSafe%20Solutions%2C%20I%20need%20consultancy."
+      href="https://wa.me/917003206632?text=Hello%20RadiSafe%20Solutions%2C%20I%20need%20consultancy."
       target="_blank"
       rel="noreferrer"
       className="fixed bottom-5 right-5 z-50 rounded-full bg-emerald-500 px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-emerald-500/30 transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-600"

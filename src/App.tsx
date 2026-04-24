@@ -37,7 +37,7 @@ function HomePage() {
                 Get Free Consultation
               </Link>
               <a
-                href="https://wa.me/919999999999?text=Need%20AERB%20consultancy%20support%20for%20our%20facility."
+                href="https://wa.me/917003206632?text=Need%20AERB%20consultancy%20support%20for%20our%20facility."
                 target="_blank"
                 rel="noreferrer"
                 className="rounded-full border border-white px-5 py-2.5 font-semibold transition hover:bg-white/10"
@@ -197,7 +197,7 @@ function ContactPage() {
     const payload = Object.fromEntries(formData.entries());
 
     try {
-      const response = await fetch("http://localhost:4000/api/inquiry", {
+      const response = await fetch("/api/inquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -244,7 +244,7 @@ function ContactPage() {
         <div className="space-y-4">
           <div className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-700 shadow-sm">
             <p>
-              <span className="font-semibold">Phone:</span> +91-XXXXXXXXXX
+              <span className="font-semibold">Phone:</span> +91-7003206632
             </p>
             <p className="mt-2">
               <span className="font-semibold">Email:</span> info@radisafe.in
@@ -254,7 +254,7 @@ function ContactPage() {
             </p>
           </div>
           <a
-            href="https://wa.me/919999999999?text=I%20want%20to%20discuss%20radiation%20safety%20requirements."
+            href="https://wa.me/917003206632?text=I%20want%20to%20discuss%20radiation%20safety%20requirements."
             target="_blank"
             rel="noreferrer"
             className="inline-block rounded-full bg-emerald-500 px-5 py-2.5 font-semibold text-white"
@@ -348,7 +348,7 @@ export default function App() {
             Get Quote
           </Link>
           <a
-            href="https://wa.me/919999999999?text=I%20want%20AERB%20consultancy%20support."
+            href="https://wa.me/917003206632?text=I%20want%20AERB%20consultancy%20support."
             target="_blank"
             rel="noreferrer"
             className="flex-1 rounded-full bg-emerald-500 px-4 py-2 text-center text-sm font-semibold text-white"
