@@ -6,6 +6,15 @@ import { AnimatedSection, SiteFooter, SiteHeader, WhatsAppFloat } from "./compon
 import { faqs, products, services } from "./data";
 
 const inquiryApiCandidates = ["/api/inquiry", "http://localhost:4000/api/inquiry"];
+const adminApiCandidates = ["/api/admin/inquiries", "http://localhost:4000/api/admin/inquiries"];
+
+type InquiryItem = {
+  name: string;
+  phone: string;
+  email: string;
+  message: string;
+  submittedAt: string;
+};
 
 function HomePage() {
   const trustPoints = [
@@ -322,6 +331,101 @@ function InputField({ name, label, type = "text" }: { name: string; label: strin
   );
 }
 
+function AdminPage() {
+  const [token, setToken] = useState("");
+  const [items, setItems] = useState<InquiryItem[]>([]);
+  const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
+  const [error, setError] = useState("");
+
+  async function loadInquiries(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setStatus("loading");
+    setError("");
+
+    try {
+      let loaded = false;
+      for (const endpoint of adminApiCandidates) {
+        try {
+          const response = await fetch(endpoint, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "x-admin-token": token.trim(),
+            },
+          });
+
+          if (!response.ok) {
+            if (response.status === 401) {
+              setError("Invalid admin token.");
+            }
+            continue;
+          }
+
+          const data = await response.json();
+          setItems(Array.isArray(data?.inquiries) ? data.inquiries : []);
+          setStatus("done");
+          loaded = true;
+          break;
+        } catch {
+          // Try next candidate endpoint.
+        }
+      }
+
+      if (!loaded) throw new Error("Unable to fetch inquiries");
+    } catch {
+      setStatus("idle");
+      setError((current) => current || "Could not reach admin API. Ensure backend is running.");
+    }
+  }
+
+  return (
+    <AnimatedSection title="Admin Inquiries">
+      <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <form onSubmit={loadInquiries} className="flex flex-col gap-3 sm:flex-row">
+          <input
+            type="password"
+            value={token}
+            onChange={(event) => setToken(event.target.value)}
+            placeholder="Enter admin token"
+            className="w-full rounded-lg border border-slate-300 p-2.5 focus:border-brand-600 focus:outline-none"
+            required
+          />
+          <button
+            type="submit"
+            disabled={status === "loading"}
+            className="rounded-full bg-brand-600 px-5 py-2.5 font-semibold text-white transition hover:bg-brand-700 disabled:opacity-60"
+          >
+            {status === "loading" ? "Loading..." : "Load Inquiries"}
+          </button>
+        </form>
+        {error ? <p className="text-sm text-rose-600">{error}</p> : null}
+        {status === "done" && items.length === 0 ? <p className="text-sm text-slate-600">No inquiries found.</p> : null}
+        <div className="space-y-3">
+          {items.map((item, index) => (
+            <article key={`${item.submittedAt}-${index}`} className="rounded-lg border border-slate-200 p-4">
+              <p className="text-sm">
+                <span className="font-semibold">Name:</span> {item.name}
+              </p>
+              <p className="text-sm">
+                <span className="font-semibold">Phone:</span> {item.phone}
+              </p>
+              <p className="text-sm">
+                <span className="font-semibold">Email:</span> {item.email}
+              </p>
+              <p className="text-sm">
+                <span className="font-semibold">Time:</span> {new Date(item.submittedAt).toLocaleString()}
+              </p>
+              <p className="mt-2 text-sm text-slate-700">
+                <span className="font-semibold">Message:</span> {item.message}
+              </p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </AnimatedSection>
+  );
+}
+
 function TestimonialsSection() {
   const items = [
     "RadiSafe handled our AERB renewal for three branches in Pune with clear documentation and zero follow-up delays.",
@@ -371,6 +475,7 @@ export default function App() {
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </main>
       <SiteFooter />
