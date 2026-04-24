@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { AnimatedSection, SiteFooter, SiteHeader, WhatsAppFloat } from "./components";
 import { faqs, products, services } from "./data";
 
+const inquiryApiCandidates = ["/api/inquiry", "http://localhost:4000/api/inquiry"];
+
 function HomePage() {
   const trustPoints = [
     "AERB documentation and registration support",
@@ -197,18 +199,31 @@ function ContactPage() {
     const payload = Object.fromEntries(formData.entries());
 
     try {
-      const response = await fetch("/api/inquiry", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      let response: Response | null = null;
 
-      if (!response.ok) throw new Error("Unable to send inquiry");
+      for (const endpoint of inquiryApiCandidates) {
+        try {
+          const candidateResponse = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (candidateResponse.ok) {
+            response = candidateResponse;
+            break;
+          }
+        } catch {
+          // Try the next endpoint candidate.
+        }
+      }
+
+      if (!response) throw new Error("Unable to send inquiry");
       event.currentTarget.reset();
       setStatus("done");
     } catch {
       setStatus("idle");
-      setError("Could not reach inquiry API. Start backend with `npm run server`.");
+      setError("Could not reach inquiry API. Make sure backend is running with `npm run server` on port 4000.");
     }
   }
 
@@ -247,7 +262,7 @@ function ContactPage() {
               <span className="font-semibold">Phone:</span> +91-7003206632
             </p>
             <p className="mt-2">
-              <span className="font-semibold">Email:</span> info@radisafe.in
+              <span className="font-semibold">Email:</span> tantiakash19@gmail.com
             </p>
             <p className="mt-2">
               <span className="font-semibold">Office Hours:</span> Mon-Sat, 9:30 AM - 7:00 PM
