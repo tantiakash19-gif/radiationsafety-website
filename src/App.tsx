@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { AnimatedSection, SiteFooter, SiteHeader, WhatsAppFloat } from "./components";
 import { faqs, products, services } from "./data";
 
-const inquiryApiCandidates = ["/api/inquiry", "http://localhost:4000/api/inquiry"];
+const inquiryApiEndpoint = "/api/inquiry";
 
 function HomePage() {
   const trustPoints = [
@@ -201,46 +201,22 @@ function ContactPage() {
     const payload = Object.fromEntries(formData.entries());
 
     try {
-      let response: Response | null = null;
-      let acceptedWithoutEmail = false;
+      const response = await fetch(inquiryApiEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(String(result?.message || "Unable to send inquiry"));
 
-      for (const endpoint of inquiryApiCandidates) {
-        try {
-          const candidateResponse = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-
-          if (candidateResponse.ok) {
-            response = candidateResponse;
-            break;
-          }
-
-          const failure = await candidateResponse.json().catch(() => null);
-          const failureMessage = String(failure?.message || "");
-          if (failureMessage.includes("Email is not configured on server")) {
-            acceptedWithoutEmail = true;
-            setNotice("Inquiry submitted. Email forwarding is being configured on server.");
-            break;
-          }
-
-          if (failureMessage) {
-            setError("Could not submit inquiry right now. Please try again.");
-          }
-        } catch {
-          // Try the next endpoint candidate.
-        }
+      if (result?.message) {
+        setNotice(String(result.message));
       }
-
-      if (!response && !acceptedWithoutEmail) throw new Error("Unable to send inquiry");
       event.currentTarget.reset();
       setStatus("done");
     } catch {
       setStatus("idle");
-      setError((current) =>
-        current || "Could not reach inquiry API. Make sure backend is running with `npm run server` on port 4000.",
-      );
+      setError("Could not submit inquiry right now. Make sure backend is running with `npm run server`.");
     }
   }
 

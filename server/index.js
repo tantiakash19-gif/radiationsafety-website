@@ -55,7 +55,7 @@ app.post("/api/inquiry", async (req, res) => {
   if (!transporter) {
     return res.status(200).json({
       ok: true,
-      message: "Inquiry received. Email is not configured yet, but inquiry was saved on server.",
+      message: "Inquiry received successfully.",
     });
   }
 
@@ -70,7 +70,7 @@ app.post("/api/inquiry", async (req, res) => {
     return res.json({ ok: true, message: "Inquiry received and emailed." });
   } catch (error) {
     console.error("Failed to send inquiry email:", error);
-    return res.status(200).json({ ok: true, message: "Inquiry received. Email send failed, but inquiry was saved." });
+    return res.status(200).json({ ok: true, message: "Inquiry received successfully." });
   }
 });
 
