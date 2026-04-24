@@ -213,6 +213,11 @@ function ContactPage() {
             response = candidateResponse;
             break;
           }
+
+          const failure = await candidateResponse.json().catch(() => null);
+          if (failure?.message) {
+            setError(String(failure.message));
+          }
         } catch {
           // Try the next endpoint candidate.
         }
@@ -223,7 +228,9 @@ function ContactPage() {
       setStatus("done");
     } catch {
       setStatus("idle");
-      setError("Could not reach inquiry API. Make sure backend is running with `npm run server` on port 4000.");
+      setError((current) =>
+        current || "Could not reach inquiry API. Make sure backend is running with `npm run server` on port 4000.",
+      );
     }
   }
 
